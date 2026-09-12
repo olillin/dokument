@@ -45,7 +45,7 @@ jobs:
       - name: Find revised at date
         id: revised_at
         # Note: Revision dates use en-dashes
-        run: echo "::set-output name=revised_at::$(pdfgrep -iPe '(?<=Reviderad: )\d{4}[–-]\d{2}[–-]\d{2}' doc.pdf -o| sed 's/–/-/g')"
+        run: 'echo "::set-output name=revised_at::$(pdfgrep -iPe ''(?<=Reviderad: )\d{4}[–-]\d{2}[–-]\d{2}'' doc.pdf -o| sed ''s/–/-/g'')"'
 
       - name: Publish PDF
         uses: olillin/publish-docs-action@v1
