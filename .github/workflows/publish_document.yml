@@ -28,16 +28,15 @@ jobs:
       build_working_directory: ${{ inputs.build_working_directory }}
 
   publish:
+    name: Publish PDF
     runs-on: ubuntu-latest
     needs: build
     steps:
       - name: Get PDF
+        id: download
         uses: actions/download-artifact@v8
         with:
           path: ./pdfs
-
-      - name: Find PDF in directory
-        run: mv "$(find ./pdfs/**/*.pdf -type f | head -1)" doc.pdf
 
       - name: Install pdfgrep
         run: sudo apt install -y pdfgrep
@@ -45,12 +44,12 @@ jobs:
       - name: Find revised at date
         id: revised_at
         # Note: Revision dates use en-dashes
-        run: 'echo "::set-output name=revised_at::$(pdfgrep -iPe ''(?<=Reviderad: )\d{4}[–-]\d{2}[–-]\d{2}'' doc.pdf -o| sed ''s/–/-/g'')"'
+        run: 'echo "::set-output name=revised_at::$(pdfgrep -iPe ''(?<=Reviderad: )\d{4}[–-]\d{2}[–-]\d{2}'' ''${{ steps.download.outputs.download-path }}'' -o| sed ''s/–/-/g'')"'
 
       - name: Publish PDF
         uses: olillin/publish-docs-action@v1
         with:
-          path: ./doc.pdf
+          path: ${{ steps.download.outputs.download-path }}
           category_slug: ${{ inputs.category_slug }}
           document_slug: ${{ inputs.document_slug }}
           revised_at: ${{ steps.revised_at.outputs.revised_at }}
