@@ -37,7 +37,7 @@ jobs:
         id: download
         uses: actions/download-artifact@v8
         with:
-          name: artifact
+          name: document
 
       - name: Install pdfgrep
         run: sudo apt install -y pdfgrep
