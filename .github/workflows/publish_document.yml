@@ -26,7 +26,6 @@ jobs:
       document_name: ${{ inputs.document_name }}
       latex_build_entry: ${{ inputs.latex_build_entry }}
       build_working_directory: ${{ inputs.build_working_directory }}
-      artifact_name: document
 
   publish:
     name: Publish PDF
@@ -37,7 +36,11 @@ jobs:
         id: download
         uses: actions/download-artifact@v8
         with:
-          name: document
+          name: ${{ inputs.document_name }}
+
+      - name: Save PDF path
+        id: find
+        run: 'echo "path=${{ steps.download.outputs.download-path }}/${{ inputs.document_name }}.pdf" >> "$GITHUB_OUTPUT"'
 
       - name: Install pdfgrep
         run: sudo apt install -y pdfgrep
@@ -45,12 +48,12 @@ jobs:
       - name: Find revised at date
         id: revised_at
         # Note: Revision dates use en-dashes
-        run: 'echo "revised_at=$(pdfgrep -iPe ''(?<=Reviderad: )\d{4}[–-]\d{2}[–-]\d{2}'' ''${{ steps.download.outputs.download-path }}'' -o| sed ''s/–/-/g'')" >> $GITHUB_OUTPUT'
+        run: 'echo "revised_at=$(pdfgrep -iPe ''(?<=Reviderad: )\d{4}[–-]\d{2}[–-]\d{2}'' ''${{ steps.find.outputs.path }}'' -o| sed ''s/–/-/g'')" >> $GITHUB_OUTPUT'
 
       - name: Publish PDF
         uses: olillin/publish-docs-action@v1
         with:
-          path: ${{ steps.download.outputs.download-path }}
+          path: ${{ steps.find.outputs.path }}
           category_slug: ${{ inputs.category_slug }}
           document_slug: ${{ inputs.document_slug }}
           revised_at: ${{ steps.revised_at.outputs.revised_at }}
